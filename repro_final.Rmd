@@ -1,0 +1,52 @@
+---
+title: "ReproducibleFinal"
+author: "Rui"
+date: "10/30/2016"
+output: html_document
+---
+
+Data Processing
+Step 1: Read data and documentations
+```{r}
+##load libraries
+install.packages("reshape")
+library(dplyr)
+library(ggplot2)
+library(reshape)
+## read data
+file.url<-"https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+download.file(file.url, destfile ="storm.csv.bz2",method = "auto")
+storm<-read.csv("storm.csv.bz2")
+head(storm)
+str(storm)
+# read documentations
+file.url<-"https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf"
+download.file(file.url,destfile="storm_doc.pdf",method="auto")
+# read FAQ
+file.url<-"https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2FNCDC%20Storm%20Events-FAQ%20Page.pdf"
+download.file(file.url,destfile = "FAQ.pdf",method="auto")
+```
+
+In order to answer the first quesiton, we need to know the total number of loss of lives, and injuries, across the U.S., by even type. 
+```{r, echo=TRUE}
+
+```
+To answer the second question, we need to know the total property damage and crop damage across the United States by event type.
+
+```{r, echo=TRUE}
+sum_storm<-storm %>%
+  group_by(EVTYPE) %>%
+  summarise(total_fatalities=sum(FATALITIES),total_injuries=sum(INJURIES),total_propdmg=sum(PROPDMG),total_cropdmg=sum(CROPDMG))
+
+storm_harm<-arrange(sum_storm,desc(total_fatalities),desc(total_injuries))
+most_harm<-subset(storm_harm[1:10,],select=c(EVTYPE,total_fatalities,total_injuries))
+melted_harm<-melt(data.frame(most_harm), id="EVTYPE")
+ggplot(melted_harm,aes(x=EVTYPE,y=value,fill=variable)) + geom_bar(stat="identity", position="dodge",alpha=.3)
+
+storm_damage<-arrange(sum_storm,desc(total_propdmg),desc(total_cropdmg))
+most_damage<-subset(storm_damage[1:10,],select=c(EVTYPE,total_propdmg,total_cropdmg))
+melted_damage<-melt(data.frame(most_damage), id="EVTYPE")
+ggplot(melted_damage,aes(x=EVTYPE,y=value,fill=variable)) + geom_bar(stat="identity", position="dodge",alpha=.3)
+```
+
+
